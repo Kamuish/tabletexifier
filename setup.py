@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="tabletexifier", # Replace with your own username
-    version="0.1",
+    version="0.1.1",
     author="Kamuish",
     author_email="andremiguel952@gmail.com",
     description="Pretty formatted tables that can be exported to LaTeX",
@@ -18,4 +18,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    python_requires='>=3.6',
 )
