@@ -151,9 +151,6 @@ class Table:
     def N_lines(self):
         return len(self._lines[self._header[0]])
      
-    def latexify(self):
-        pass 
-
     def __str__(self):
         return '\n'.join(self.get_pretty_print(fmt='string'))
 
