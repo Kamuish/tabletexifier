@@ -45,6 +45,20 @@ By printing the table, we have
 \end{table}
  ```
 
+It is also possible to set the number of decimal places in the numerical entries:
+ ```
+>>> x.set_decimal_places(4)
+>>> print(x)
+
+ ----------------------------------------------
+ | Name   | b      | c      | d      | e      |
+ +--------+--------+--------+--------+--------+
+ | first  | 1.0000 | 4.0000 | 6.0000 | 7.0000 |
+ +--------+--------+--------+--------+--------+
+ | second | 1.1331 | 4.0000 | 6.0000 | 7.1410 |
+ ----------------------------------------------
+ ```
+
 To build a table with lestt vertical and/or vertical lines: 
  ```
 >>> x.set_design_property("lines", 'T')
