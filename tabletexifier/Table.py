@@ -1,5 +1,4 @@
 from operator import add 
-from tabletexifier.utils import compute_digits
 
 
 class Table:
