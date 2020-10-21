@@ -85,6 +85,14 @@ will update both the ASCII table and the Latex one:
 \end{table}
 ```
 
+To store the data to file:
+```
+>>> x.write_to_file("<path>_<to>_<file>", mode='a', write_table = True, write_LaTeX=False)
+    # mode is the normal file.write mode
+    # write_table to write the ASCII table
+    # write_LaTeX to write the latex code to build the table
+```
+
 
  # ToDo list 
   - [ ] Add proper docs for missing functionalities (e.g. change alignement of columns or the vertical lines)
