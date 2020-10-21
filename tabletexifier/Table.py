@@ -45,7 +45,7 @@ class Table:
         out = self._header[col_number] if get_header else ''
         return [out] + self._lines[self._header[col_number]]
 
-    def set_latex_property(self, fmt_key, value):
+    def set_design_property(self, fmt_key, value):
         try:
             self._latex_properties[fmt_key] = value 
         except KeyError as e:
