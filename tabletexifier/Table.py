@@ -11,19 +11,21 @@ class Table:
                                   'lines': '||' }
 
         self._largest_entry = [len(head) for head in header]
+
         self.table_lines = {'T':[' ',''], '||':[' ',' |']}
         self.intersection_lines = {'T' : '-', '||' : '+'}
 
-        
+        # Number of decimal places in the numbers
+        self._decimal_places = None
+
+
     def add_row(self, row):
         """
         Adds a new row to the table; Assumes that the order is the same as the one given in the header
         """
         for col_number, new_value in enumerate(row):
-            if isinstance(new_value, str):
-                entry_size = len(new_value)
-            else:
-                entry_size = compute_digits(new_value)
+            
+            entry_size = len(str(new_value))
             if entry_size > self._largest_entry[col_number]:
                 self._largest_entry[col_number] = entry_size 
 
@@ -111,12 +113,26 @@ class Table:
         output_lines = [' ' for _ in range(self.N_lines+1)] # each line is an entry; Easy to add horizontal lines later one
 
         line_separator = ' ' +  self.intersection_lines[self._latex_properties['lines']]
+
         for col_number in range(self.N_columns):
             column = self.get_column(col_number, get_header=True)
+
+            largest_entry = self._largest_entry[col_number]
             
+            # update the column to find if there is a "rounded" integer with more places than the current largest element
+            if self._decimal_places is not None:  
+                updated_column = []
+                for col_entry in column:
+                    if isinstance(col_entry, (int, float)):
+                        col_entry = '{:.{}f}'.format(col_entry, self._decimal_places)
+                    updated_column.append(col_entry)
+                column = updated_column
+                largest_entry = len(max(column, key = len))
+
             line_type, intersection = self._get_table_info(col_number, fmt)
+
             for line_index, col_entry in enumerate(column):
-                entry = line_entry(col_entry, line_type,(self._largest_entry[col_number] -len(str(col_entry))))
+                entry = line_entry(col_entry, line_type,(largest_entry -len(str(col_entry))))
                 output_lines[line_index] = output_lines[line_index] + entry
             
             if col_number == 0:
@@ -142,7 +158,13 @@ class Table:
 
         output_lines = self.get_pretty_print(fmt = 'LaTeX')
         return '\n'.join([*header,*output_lines, *footer])
-            
+
+    def set_decimal_places(self, value):
+        self._decimal_places = value 
+
+    def write_to_file(self, path, mode='a'):
+        pass 
+
     @property
     def N_columns(self):
         return len(self._header)
