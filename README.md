@@ -8,10 +8,40 @@ also be easily exported to LaTeX code.
 
 
 # How to use
+```
 
-from tabletexifier import Table
+    from tabletexifier import Table
 
-x = Table(['Name', 'b','c','d','e']) 
-x.add_row(['first',1,4,6,7])
-x.add_row(['first',1,4,6,7])
-print(x.build_latex())
+    x = Table(['Name', 'b','c','d','e']) 
+    x.add_row(['first',1,4,6,7])
+    x.add_row(['second',1,4,6,7])
+```
+
+By printing the table, we have
+
+```
+>>> print(x)
+
+ -------------------------
+ | Name  | b | c | d | e |
+ +-------+---+---+---+---+
+ | first | 1 | 4 | 6 | 7 |
+ +-------+---+---+---+---+
+ | first | 1 | 4 | 6 | 7 |
+ -------------------------
+ ```
+
+ It can be converted to Latex by 
+
+ ```
+ >>> print(x.build_latex())
+
+\begin{table}
+\caption{\label{Tab:}}
+\begin{tabular}{|l|l|l|l|l|}
+\hline Name  & b & c & d & e \\ \hline
+ first & 1 & 4 & 6 & 7 \\ \hline
+ first & 1 & 4 & 6 & 7 \\ \hline
+\end{tabular}
+\end{table}
+ ```
