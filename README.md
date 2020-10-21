@@ -59,7 +59,23 @@ It is also possible to set the number of decimal places in the numerical entries
  ----------------------------------------------
  ```
 
-To build a table with lestt vertical and/or vertical lines: 
+ The columns also allow the data to be tuples or lists. However, the decimal places do not apply to them:
+ 
+ ```
+>>> x.add_row(['third',[1,1,1], [], (1,1,1),()])
+ ----------------------------------------------------
+ | Name   | b         | c      | d         | e      |
+ +--------+-----------+--------+-----------+--------+
+ | first  | 1.0000    | 4.0000 | 6.0000    | 7.0000 |
+ +--------+-----------+--------+-----------+--------+
+ | second | 1.0000    | 4.0000 | 6.0000    | 7.0000 |
+ +--------+-----------+--------+-----------+--------+
+ | third  | [1, 1, 1] | []     | (1, 1, 1) | ()     |
+ ----------------------------------------------------
+  ```
+
+To only have a cross patern of lines:
+
  ```
 >>> x.set_design_property("lines", 'T')
  ```
