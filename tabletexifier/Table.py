@@ -161,8 +161,15 @@ class Table:
     def set_decimal_places(self, value):
         self._decimal_places = value 
 
-    def write_to_file(self, path, mode='a'):
-        pass 
+    def write_to_file(self, path, mode='a', write_table = True, write_LaTeX=False):
+
+        with open(path, mode = mode) as file:
+            if write_table:
+                lines = self.get_pretty_print(fmt = 'string')
+                file.write('\n'.join(lines) + '\n')
+            if write_LaTeX:
+                lines = self.build_latex()
+                file.write(lines)  
 
     @property
     def N_columns(self):
