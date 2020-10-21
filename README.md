@@ -45,6 +45,33 @@ By printing the table, we have
 \end{table}
  ```
 
+To build a table with lestt vertical and/or vertical lines: 
+ ```
+>>> x.set_design_property("lines", 'T')
+ ```
+
+will update both the ASCII table and the Latex one:
+
+```
+>>> print(x)
+
+  Name   | b c d e
+ --------+--------
+  first  | 1 4 6 7
+  second | 1 4 6 7
+
+>>> print(x.build_latex())
+\begin{table}
+\caption{\label{Tab:}}
+\begin{tabular}{l|llll}
+ Name   & b & c & d & e \\ \hline
+ first  & 1 & 4 & 6 & 7 \\ 
+ second & 1 & 4 & 6 & 7 \\ 
+\end{tabular}
+\end{table}
+```
+
+
  # ToDo list 
   - [ ] Add proper docs for missing functionalities (e.g. change alignement of columns or the vertical lines)
   - [ ] Write tests for the functions 	
