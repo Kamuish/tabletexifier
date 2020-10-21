@@ -124,10 +124,11 @@ class Table:
                 for col_entry in column:
                     if isinstance(col_entry, (int, float)):
                         col_entry = '{:.{}f}'.format(col_entry, self._decimal_places)
+                    else:
+                        col_entry = str(col_entry)
                     updated_column.append(col_entry)
                 column = updated_column
                 largest_entry = len(max(column, key = len))
-
             line_type, intersection = self._get_table_info(col_number, fmt)
 
             for line_index, col_entry in enumerate(column):
