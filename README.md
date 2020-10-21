@@ -3,9 +3,9 @@ also be easily exported to LaTeX code.
 
 
 # How to Install
-
-
-
+```
+pip install tabletexifier
+```
 
 # How to use
 ```
@@ -44,3 +44,8 @@ By printing the table, we have
 \end{tabular}
 \end{table}
  ```
+
+ # ToDo list 
+  - [ ] Add proper docs for missing functionalities (e.g. change alignement of columns or the vertical lines)
+  - [ ] Write tests for the functions 	
+  
