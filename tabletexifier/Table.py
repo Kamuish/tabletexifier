@@ -2,7 +2,7 @@ from operator import add
 from tabletexifier.table_styles import Tlines, Alines, MNRAS
 
 class Table:
-    def __init__(self, header, table_style = 'MNRAS' ,*args, **kwargs):
+    def __init__(self, header, table_style = 'A' ,*args, **kwargs):
 
         self._style_map = {'T': Tlines, 'A':Alines, 'MNRAS':MNRAS}
         self._header = header 
@@ -52,6 +52,10 @@ class Table:
     def set_design_property(self, fmt_key, value):
         try:
             self._latex_properties[fmt_key] = value 
+
+            if fmt_key == 'lines':
+                self._table_style = self._style_map[self._latex_properties['lines']]()
+  
         except KeyError as e:
             raise Exception from e 
 
