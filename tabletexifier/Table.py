@@ -151,11 +151,11 @@ class Table:
             raise TypeError("The decimal places must be an integer")
         self._decimal_places = value 
 
-    def write_to_file(self, path, mode='a', write_table = True, write_LaTeX=False):
+    def write_to_file(self, path, mode='a', write_table = True, write_LaTeX=False, ignore_cols=None):
 
         with open(path, mode = mode) as file:
             if write_table:
-                lines = self.get_pretty_print(fmt = 'string')
+                lines = self.get_pretty_print(fmt = 'string', ignore_cols=ignore_cols)
                 file.write(''.join(lines) + '\n')
             if write_LaTeX:
                 lines = self.build_latex()
