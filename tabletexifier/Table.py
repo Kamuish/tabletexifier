@@ -79,7 +79,7 @@ class Table:
         return out 
 
 
-    def get_pretty_print(self, fmt = 'string'):
+    def get_pretty_print(self, ignore_cols, fmt = 'string'):
 
         line_entry = lambda value, line_type, spaces: '{1}{0}{3}{2}'.format(value, *line_type, ' '*spaces)
         
@@ -89,6 +89,9 @@ class Table:
         line_separator = ' ' +  self._table_style.get_intersection(col_number=0, fmt = fmt)[0]
 
         for col_number in range(self.N_columns):
+            if self._header[col_number] in ignore_cols:
+                continue
+
             column = self.get_column(col_number, get_header=True)
 
             largest_entry = self._largest_entry[col_number]
@@ -121,17 +124,26 @@ class Table:
         output_lines = self._add_horizontal_lines(output_lines, line_separator, fmt)
         return output_lines
 
-    def build_latex(self):
+    def build_latex(self, ignore_cols = None):
         """
         Transform the table to LaTeX format and returns as a string, with each line seperated by a new line character
         """
 
-        col_fmts = self._table_style.get_TeX_header(self._header, self._latex_properties['alignement'])
+        head = [] 
+        center_prop = []
+        for index, col_name in enumerate(self._header):
+            if ignore_cols is not None and col_name in ignore_cols:
+                continue 
+            head.append(col_name)
+            center_prop.append(self._latex_properties['alignement'][index])
+
+
+        col_fmts = self._table_style.get_TeX_header(head, center_prop)
 
         header = [r'\begin{table}',r'\centering',r'\caption{\label{Tab:}}',r'\begin{tabular}{' + ''.join(col_fmts) +'}']
         footer = [r'\end{tabular}', r'\end{table}']
 
-        output_lines = self.get_pretty_print(fmt = 'LaTeX')
+        output_lines = self.get_pretty_print(fmt = 'LaTeX', ignore_cols = ignore_cols)
         return '\n'.join([*header,*output_lines, *footer])
 
     def set_decimal_places(self, value):
@@ -156,7 +168,7 @@ class Table:
         return len(self._lines[self._header[0]])
      
     def __str__(self):
-        return ''.join(self.get_pretty_print(fmt='string'))
+        return ''.join(self.get_pretty_print(fmt='string', ignore_cols = []))
 
     def __getitem__(self, key):
         if isinstance(key, str):
