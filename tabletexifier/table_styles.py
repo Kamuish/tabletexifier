@@ -10,7 +10,7 @@ class Style:
         """
         pass 
 
-    def get_hline(self, row_number, row_size ,fmt):
+    def get_hline(self, row_number, separator ,fmt):
         """
         Return horizontal separator for a given column. Returns an array with bthe separator for the above and below
         """
