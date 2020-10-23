@@ -11,7 +11,7 @@ pip install tabletexifier
 ```
 
 >>> from tabletexifier import Table
->>> x = Table(['Name', 'b','c','d','e']) 
+>>> x = Table(['Name', 'b','c','d','e'], table_style = 'A')  
 >>> x.add_row(['first',1,4,6,7])
 >>> x.add_row(['second',1,4,6,7])
 ```
@@ -100,6 +100,31 @@ will update both the ASCII table and the Latex one:
 \end{tabular}
 \end{table}
 ```
+
+There is also the option to have all lines in the table (the default option):
+
+ ```
+>>> x.set_design_property("lines", 'A')
+ --------------------------
+ | Name   | b | c | d | e |
+ +--------+---+---+---+---+
+ | first  | 1 | 4 | 6 | 7 |
+ +--------+---+---+---+---+
+ | second | 1 | 4 | 6 | 7 |
+ --------------------------
+ ```
+
+ Or to use the format from different scientific journals:
+
+  ```
+>>> x.set_design_property("lines", 'MNRAS') # monthly notices of the royal astronomical society
+ --------------
+ Name   b c d e
+ --------------
+ first  1 4 6 7
+ second 1 4 6 7
+ ```
+
 
 To store the data to file:
 ```
