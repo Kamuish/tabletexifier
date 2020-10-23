@@ -1,8 +1,7 @@
-from operator import add 
 from tabletexifier.table_styles import Tlines, Alines, MNRAS
 
 class Table:
-    def __init__(self, header, table_style = 'A' ,*args, **kwargs):
+    def __init__(self, header, table_style = 'A'):
 
         self._style_map = {'T': Tlines, 'A':Alines, 'MNRAS':MNRAS}
         self._header = header 
@@ -59,8 +58,8 @@ class Table:
             if fmt_key == 'lines':
                 self._table_style = self._style_map[self._latex_properties['lines']]()
   
-        except KeyError as e:
-            raise Exception from e 
+        except KeyError as key_err:
+            raise Exception from key_err 
 
     def _get_table_info(self, col_number, fmt):
         """
