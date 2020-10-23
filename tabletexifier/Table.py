@@ -45,9 +45,12 @@ class Table:
         return [column[line_number] for column in self._lines.values()]
 
     def get_column(self, col_number, get_header = False):
-
-        out = self._header[col_number] if get_header else ''
-        return [out] + self._lines[self._header[col_number]]
+        """
+            Return a column based on its index (starting at zero). Normaly only returns values, can also give the header
+        """
+        if get_header:
+            return [self._header[col_number]] +  self._lines[self._header[col_number]]
+        return self._lines[self._header[col_number]]
 
     def set_design_property(self, fmt_key, value):
         try:
@@ -70,6 +73,16 @@ class Table:
 
 
     def _add_horizontal_lines(self, all_rows, line_separator, fmt):
+        """
+            Query the style class for the presence (or not) of a vertical separation between two consecutive lines in the table 
+
+            Parameters
+            ----------
+            all_rows: list 
+                List with the rows of data
+            line_separator: str
+                String build during the row creation. Used for the ASCII representation of the table
+        """
         output_lines = all_rows
 
         out = []
