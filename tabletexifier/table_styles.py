@@ -28,7 +28,7 @@ class Tlines(Style):
         out = [' ','']
         if fmt == 'string':
             if col_number == 0:
-                out = [' ', '|']
+                out = [' ', ' |']
         elif fmt == 'LaTeX':
             if col_number == 0:
                 out = [' ', '']
@@ -72,9 +72,9 @@ class Alines(Style):
         """
         out = [' ','']
         if fmt == 'string':
-            out = [' ', '|']
+            out = [' ', ' |']
             if col_number == 0:
-                out = ['|','|']
+                out = ['| ','|']
         elif fmt == 'LaTeX':
             if col_number == 0:
                 out = [' ', '']
