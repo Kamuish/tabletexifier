@@ -158,4 +158,7 @@ class Table:
     def __str__(self):
         return ''.join(self.get_pretty_print(fmt='string'))
 
-
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self._lines[key]
+        raise TypeError("Key should be a string")
