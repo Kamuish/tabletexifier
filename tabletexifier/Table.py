@@ -1,15 +1,15 @@
 from operator import add 
-from tabletexifier.table_styles import Tlines, Alines
+from tabletexifier.table_styles import Tlines, Alines, MNRAS
 
 class Table:
-    def __init__(self, header, *args, **kwargs):
+    def __init__(self, header, table_style = 'MNRAS' ,*args, **kwargs):
 
-        self._style_map = {'T': Tlines, 'A':Alines}
+        self._style_map = {'T': Tlines, 'A':Alines, 'MNRAS':MNRAS}
         self._header = header 
         self._lines = {col_name : [] for col_name in header}
 
         self._latex_properties = {'alignement': ['c' for _ in header],
-                                  'lines': 'A' }
+                                  'lines': table_style }
 
         self._table_style = self._style_map[self._latex_properties['lines']]()
         self._journal_style = None 
