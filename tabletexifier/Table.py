@@ -1,18 +1,21 @@
 from operator import add 
-
+from tabletexifier.table_styles import Tlines, Alines
 
 class Table:
     def __init__(self, header, *args, **kwargs):
+
+        self._style_map = {'T': Tlines, 'A':Alines}
         self._header = header 
         self._lines = {col_name : [] for col_name in header}
 
-        self._latex_properties = {'alignement': ['l' for _ in header],
-                                  'lines': '||' }
+        self._latex_properties = {'alignement': ['c' for _ in header],
+                                  'lines': 'A' }
+
+        self._table_style = self._style_map[self._latex_properties['lines']]()
+        self._journal_style = None 
 
         self._largest_entry = [len(head) for head in header]
 
-        self.table_lines = {'T':[' ',''], '||':[' ',' |']}
-        self.intersection_lines = {'T' : '-', '||' : '+'}
 
         # Number of decimal places in the numbers
         self._decimal_places = None
@@ -56,62 +59,30 @@ class Table:
         """
             Return the charactcer that will separate two entries in a row. Return this separation on a column by column basis
         """
-        line_type = self.table_lines[self._latex_properties['lines']]
-
-        intersection = self.intersection_lines[self._latex_properties['lines']]
-        
-        if col_number == 0:
-            if fmt == 'string':
-                if self._latex_properties['lines'] == 'T':
-                    line_type = [' ', ' |']
-                    intersection = '+'
-                elif self._latex_properties['lines'] == '||':
-                    line_type = ['| ', ' |']
-        if fmt == 'LaTeX':
-            line_type = [' & ','']
-            if col_number == 0:
-                line_type = ['','']
-            intersection = ''
+        line_type = self._table_style.get_vline(col_number, fmt)
+        intersection = self._table_style.get_intersection(col_number, fmt)[1]
         return line_type, intersection 
+
 
 
     def _add_horizontal_lines(self, all_rows, line_separator, fmt):
         output_lines = all_rows
-        if fmt == 'string':
-            if self._latex_properties['lines'] == 'T':
-                output_lines.insert(1, line_separator)
 
-            if self._latex_properties['lines'] == '||':
-                table_edges = line_separator.replace("+",'-')
-                out = [table_edges, output_lines[0]]
-                for complete_line in output_lines[1:]:
-                    out.append(line_separator)
-                    out.append(complete_line)
-                out.append(table_edges)
-                output_lines = out 
-        elif fmt == 'LaTeX':
-            vlines = [] 
-            output_lines = [line + r' \\' for line in output_lines]
-            for index, _ in enumerate(self._header):
-                if self._latex_properties['lines'] == 'T' and index == 0 or self._latex_properties['lines'] == '||':
-                    vlines.append(r' \hline')
-                else:
-                    vlines.append(' ')
-            output_lines = list(map( add, output_lines, vlines))
+        out = []
+        for index, row in enumerate(output_lines):
+            vlines = self._table_style.get_hline(index, line_separator, fmt)
+            out.append(vlines[0]+row+vlines[1])
+        return out 
 
-            if self._latex_properties['lines'] == '||':
-                output_lines[0] = r'\hline' + output_lines[0]
-        return output_lines
 
     def get_pretty_print(self, fmt = 'string'):
 
         line_entry = lambda value, line_type, spaces: '{1}{0}{3}{2}'.format(value, *line_type, ' '*spaces)
         
-        line_type = self.table_lines[self._latex_properties['lines']]
         
         output_lines = [' ' for _ in range(self.N_lines+1)] # each line is an entry; Easy to add horizontal lines later one
 
-        line_separator = ' ' +  self.intersection_lines[self._latex_properties['lines']]
+        line_separator = ' ' +  self._table_style.get_intersection(col_number=0, fmt = fmt)[0]
 
         for col_number in range(self.N_columns):
             column = self.get_column(col_number, get_header=True)
@@ -129,16 +100,18 @@ class Table:
                     updated_column.append(col_entry)
                 column = updated_column
                 largest_entry = len(max(column, key = len))
+
             line_type, intersection = self._get_table_info(col_number, fmt)
 
             for line_index, col_entry in enumerate(column):
                 entry = line_entry(col_entry, line_type,(largest_entry -len(str(col_entry))))
                 output_lines[line_index] = output_lines[line_index] + entry
             
-            if col_number == 0:
+            if col_number == 0: # account for the first edge separator, i.e. the first "|" or " "
                 dashed_number = len(entry) - 2 
             else:
                 dashed_number = len(entry) - 1
+                
             line_separator = line_separator + '-'*(dashed_number) +intersection
 
         output_lines = self._add_horizontal_lines(output_lines, line_separator, fmt)
@@ -148,12 +121,10 @@ class Table:
         """
         Transform the table to LaTeX format and returns as a string, with each line seperated by a new line character
         """
-        if self._latex_properties['lines'] == 'T':
-            alg_str = ['','|'] + ['' for _ in self._header[2:]]
-        if self._latex_properties['lines'] == '||':
-            alg_str =  ['|' for _ in self._header]
 
-        header = [r'\begin{table}',r'\caption{\label{Tab:}}',r'\begin{tabular}{' + ''.join(list(map(add,alg_str, self._latex_properties['alignement']))) + alg_str[-1]+'}']
+        col_fmts = self._table_style.get_TeX_header(self._header, self._latex_properties['alignement'])
+
+        header = [r'\begin{table}',r'\centering',r'\caption{\label{Tab:}}',r'\begin{tabular}{' + ''.join(col_fmts) +'}']
         footer = [r'\end{tabular}', r'\end{table}']
 
         output_lines = self.get_pretty_print(fmt = 'LaTeX')
@@ -167,7 +138,7 @@ class Table:
         with open(path, mode = mode) as file:
             if write_table:
                 lines = self.get_pretty_print(fmt = 'string')
-                file.write('\n'.join(lines) + '\n')
+                file.write(''.join(lines) + '\n')
             if write_LaTeX:
                 lines = self.build_latex()
                 file.write(lines)  
@@ -181,6 +152,6 @@ class Table:
         return len(self._lines[self._header[0]])
      
     def __str__(self):
-        return '\n'.join(self.get_pretty_print(fmt='string'))
+        return ''.join(self.get_pretty_print(fmt='string'))
 
 
