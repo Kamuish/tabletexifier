@@ -147,6 +147,8 @@ class Table:
         return '\n'.join([*header,*output_lines, *footer])
 
     def set_decimal_places(self, value):
+        if not isinstance(value, int):
+            raise TypeError("The decimal places must be an integer")
         self._decimal_places = value 
 
     def write_to_file(self, path, mode='a', write_table = True, write_LaTeX=False):
