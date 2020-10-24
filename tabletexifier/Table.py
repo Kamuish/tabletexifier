@@ -46,7 +46,8 @@ class Table:
         """
         Delete the column number associated with key
         """
-
+        if self.N_columns <= 0:
+            raise RuntimeError("Table has no columns")
         col_index = self._header.index(key)
         self._largest_entry.pop(col_index)
         self._header.pop(col_index)
@@ -55,22 +56,38 @@ class Table:
     def delete_row(self, row_number):
         """
         Delete a given row (the first non-header line is the first to be removed)
-
-
         """
+        if self.N_lines <= 0:
+            raise RuntimeError("Table has no lines of data")
+
         for key, column in self._lines.items():
             _ = column.pop(row_number)
             index = self._header.index(key)
             # find the maximum size between the header and the largest element remaining in this column
-            self._largest_entry[index] = max(len(max([str(i) for i in column], key=len)), len(str(key)))
+            if len(column) > 0:
+                self._largest_entry[index] = max(len(max([str(i) for i in column], key=len)), len(str(key)))
+            else:
+                self._largest_entry[index] = 0
 
-    def get_column(self, col_number, get_header = False):
+    def get_column(self, key, get_header = False):
         """
-            Return a column based on its index (starting at zero). Normaly only returns values, can also give the header
+            Return a column based on its index (starting at zero) or a key. Normaly only returns values, can also give the header
         """
+        if isinstance(key, str):
+            if key not in self._header:
+                raise RuntimeError("Column -{}- does not exist".format(key))
+            data_column = self._lines[key]
+            head = key
+        elif isinstance(key, int):
+            if key < 0 or key > self.N_columns:
+                raise RuntimeError("Column -{}- does not exist".format(key))
+            data_column = self._lines[self._header[key]]
+            head = self._header[key]
+        else:
+            raise ValueError("Invalid identifier for the column;")
         if get_header:
-            return [self._header[col_number]] +  self._lines[self._header[col_number]]
-        return self._lines[self._header[col_number]]
+            return [head] +  data_column
+        return data_column
 
 
     def set_design_property(self, fmt_key, value):
@@ -227,6 +244,8 @@ class Table:
     
     @property
     def N_lines(self):
+        if self.N_columns <= 0:
+            return 0
         return len(self._lines[self._header[0]])
      
     def __str__(self):
