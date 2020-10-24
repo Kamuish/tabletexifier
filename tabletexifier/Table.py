@@ -8,13 +8,12 @@ class Table:
         self._lines = {col_name : [] for col_name in header}
 
         self._latex_properties = {'alignement': ['c' for _ in header],
-                                  'lines': table_style }
+                                  'style': table_style }
 
-        self._table_style = self._style_map[self._latex_properties['lines']]()
+        self._table_style = self._style_map[self._latex_properties['style']]()
         self._journal_style = None 
 
         self._largest_entry = [len(head) for head in header]
-
 
         # Number of decimal places in the numbers
         self._decimal_places = None
@@ -47,7 +46,7 @@ class Table:
         """
         Delete the column number associated with key
         """
-        
+
         col_index = self._header.index(key)
         self._largest_entry.pop(col_index)
         self._header.pop(col_index)
@@ -73,15 +72,42 @@ class Table:
             return [self._header[col_number]] +  self._lines[self._header[col_number]]
         return self._lines[self._header[col_number]]
 
-    def set_design_property(self, fmt_key, value):
-        try:
-            self._latex_properties[fmt_key] = value 
 
-            if fmt_key == 'lines':
-                self._table_style = self._style_map[self._latex_properties['lines']]()
-  
-        except KeyError as key_err:
-            raise Exception from key_err 
+    def set_design_property(self, fmt_key, value):
+        """
+            Allow to configure the table properties. Currently available:
+                fmt_key    |   value
+                -----------+----------------------------------------------------
+                style      |  A, T, MNRAS  
+                -----------+----------------------------------------------------             
+                alignement |  list with LaTeX possibilites for alignement or
+                           |   a single value. If a list is provided, it must 
+                           |   have the alignement for each column. If a value 
+                           |  is passed then it will be applied to all columns
+
+        """
+        if fmt_key not in self._latex_properties:
+            raise KeyError("Property {} does not exist".format(fmt_key))
+    
+        if fmt_key == 'alignement':
+            valid_options = ['l', 'r', 'c']
+            if isinstance(value, str):
+                if value not in valid_options:
+                    raise ValueError("LaTeX column alignement does not recognize {}".format(value))
+                self._latex_properties['alignement'] = [value for _ in self._header]
+            elif isinstance(value, (tuple, list)):
+                if any(elem not in valid_options for elem in value):
+                    raise ValueError("LaTeX column alignement does not recognize {}".format(value))
+                if len(value) != len(self._header):
+                    raise ValueError("Number of alignement properties different than the number of provided columns!")
+
+                self._latex_properties['alignement'] = value
+
+
+        if fmt_key == 'style':
+            self._latex_properties[fmt_key] = value 
+            self._table_style = self._style_map[self._latex_properties['style']]()
+
 
     def _get_table_info(self, col_number, fmt):
         """
@@ -121,7 +147,7 @@ class Table:
         output_lines = [' ' for _ in range(self.N_lines+1)] # each line is an entry; Easy to add horizontal lines later one
 
         line_separator = ' ' +  self._table_style.get_intersection(col_number=0, fmt = fmt)[0]
-
+        ignore_cols = ignore_cols if ignore_cols is not None else []
         for col_number in range(self.N_columns):
             if self._header[col_number] in ignore_cols:
                 continue

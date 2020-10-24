@@ -145,8 +145,8 @@ To store the data to file:
     - [ ] A&A (table and longtable)
     - [ ] APJ
   - Functionalities:
-    - [ ] Delete rows and columns 
-    - [ ] Easier way to change alignement of Latex columns
+    - [x] Delete rows and columns 
+    - [x] Easier way to change alignement of Latex columns
     - [ ] Allow to add extra vertical and horizontal lines
   - QoL:
     - [ ] Testing the multiple features
