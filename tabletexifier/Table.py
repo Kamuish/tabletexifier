@@ -43,6 +43,28 @@ class Table:
         """
         return [column[line_number] for column in self._lines.values()]
 
+    def delete_column(self, key):
+        """
+        Delete the column number associated with key
+        """
+        
+        col_index = self._header.index(key)
+        self._largest_entry.pop(col_index)
+        self._header.pop(col_index)
+        del self._lines[key]
+
+    def delete_row(self, row_number):
+        """
+        Delete a given row (the first non-header line is the first to be removed)
+
+
+        """
+        for key, column in self._lines.items():
+            _ = column.pop(row_number)
+            index = self._header.index(key)
+            # find the maximum size between the header and the largest element remaining in this column
+            self._largest_entry[index] = max(len(max([str(i) for i in column], key=len)), len(str(key)))
+
     def get_column(self, col_number, get_header = False):
         """
             Return a column based on its index (starting at zero). Normaly only returns values, can also give the header
