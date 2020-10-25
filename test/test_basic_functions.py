@@ -97,3 +97,12 @@ def test_decimals():
 
     x.set_decimal_places(5)
     assert x._decimal_places == 5
+
+
+def test_property_setter():
+    x = Table(['Name', 'b','c','d','e']) 
+
+    prop_name = 1
+    with pytest.raises(KeyError) as execinfo:
+        x.set_design_property(prop_name, 0)
+    assert execinfo.value.args[0] == "Property {} does not exist".format(prop_name)
