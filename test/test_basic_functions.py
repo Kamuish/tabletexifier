@@ -102,7 +102,7 @@ def test_decimals():
 
 
 def test_property_setter():
-    x = Table(['Name', 'b','c','d','e']) 
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
 
     prop_name = 1
     with pytest.raises(KeyError) as execinfo:
