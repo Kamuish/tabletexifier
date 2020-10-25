@@ -74,7 +74,7 @@ class Alines(Style):
         if fmt == 'string':
             out = [' ', ' |']
             if col_number == 0:
-                out = ['| ','|']
+                out = ['| ',' |']
         elif fmt == 'LaTeX':
             if col_number == 0:
                 out = [' ', '']
