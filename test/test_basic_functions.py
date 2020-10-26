@@ -4,24 +4,24 @@ from tabletexifier import Table
 
 def test_load_data():
 
-    x = Table(['Name', 'b','c','d','e'])
-    x.add_row(['first',1,4,6,7])
-    x.add_row(['second',1,4,6,7])
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    x.add_row(['first', 1, 4, 6, 7])
+    x.add_row(['second', 1, 4, 6, 7])
 
     pytest.assume(x.N_columns == 5)
     pytest.assume(x.N_lines == 2)
 
-    x.add_row(['third',5,6,7,8])
+    x.add_row(['third', 5, 6, 7, 8])
     pytest.assume(x.N_lines == 3)
 
 
 def test_retrieve_data():
 
-    x = Table(['Name', 'b','c','d','e'])
-    row_1 = ['first',1,4,6,7]
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    row_1 = ['first', 1, 4, 6, 7]
     x.add_row(row_1)
-    x.add_row(['second',1,4,6,7])
-    x.add_row(['third',5,6,7,8])
+    x.add_row(['second', 1, 4, 6, 7])
+    x.add_row(['third', 5, 6, 7, 8])
 
     pytest.assume(all([a == b for a, b in zip(x.get_line(0), row_1)]))
 
@@ -51,8 +51,8 @@ def test_retrieve_data():
 
 def test_remove_column():
 
-    x = Table(['Name', 'b','c','d','e'])
-    row_1 = ['first',1,4,6,7]
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    row_1 = ['first', 1, 4, 6, 7]
     x.add_row(row_1)
 
     pytest.assume(x.N_lines == 1)
@@ -61,7 +61,7 @@ def test_remove_column():
     pytest.assume(x.N_lines == 0)
     pytest.assume(x.N_columns == 4)
 
-    for k in ['Name', 'c', 'd','e']:
+    for k in ['Name', 'c', 'd', 'e']:
         x.delete_column(k)
 
     pytest.assume(x.N_columns == 0)
@@ -76,9 +76,9 @@ def test_remove_column():
 
 
 def test_remove_row():
-    x = Table(['Name', 'b','c','d','e'])
-    x.add_row(['first',1,4,6,7])
-    x.add_row(['second',1,4,6,7])
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    x.add_row(['first', 1, 4, 6, 7])
+    x.add_row(['second', 1, 4, 6, 7])
 
     assert x._largest_entry[0] == 6
     x.delete_row(1)
@@ -87,8 +87,8 @@ def test_remove_row():
 
 def test_decimals():
 
-    x = Table(['Name', 'b','c','d','e'])
-    row_1 = ['first',1,4,6,7]
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    row_1 = ['first', 1, 4, 6, 7]
     x.add_row(row_1)
 
     for val in ['1', [1], None]:
@@ -101,8 +101,26 @@ def test_decimals():
     assert x._decimal_places == 5
 
 
+def test_write_to_file(tmpdir):
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    row_1 = ['first', 1, 4, 6, 7]
+    x.add_row(row_1)
+
+    file = tmpdir.join('output.txt')
+    x.write_to_file(file.strpath)
+    assert file.read() == ''.join(x.get_pretty_print(None))
+
+    file = tmpdir.join('output_both.txt')
+    x.write_to_file(file.strpath, write_LaTeX=True)
+    assert file.read() == ''.join(x.get_pretty_print(None)) + '\n' + x.build_latex()
+
+    file = tmpdir.join('output_latex.txt')
+    x.write_to_file(file.strpath, write_table=False, write_LaTeX=True)
+    assert file.read() == x.build_latex()
+
+
 def test_property_setter():
-    x = Table(['Name', 'b','c','d','e']) 
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
 
     prop_name = 1
     with pytest.raises(KeyError) as execinfo:
