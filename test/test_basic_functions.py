@@ -101,6 +101,24 @@ def test_decimals():
     assert x._decimal_places == 5
 
 
+def test_write_to_file(tmpdir):
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    row_1 = ['first', 1, 4, 6, 7]
+    x.add_row(row_1)
+
+    file = tmpdir.join('output.txt')
+    x.write_to_file(file.strpath)
+    assert file.read() == ''.join(x.get_pretty_print(None))
+
+    file = tmpdir.join('output_both.txt')
+    x.write_to_file(file.strpath, write_LaTeX=True)
+    assert file.read() == ''.join(x.get_pretty_print(None)) + '\n' + x.build_latex()
+
+    file = tmpdir.join('output_latex.txt')
+    x.write_to_file(file.strpath, write_table=False, write_LaTeX=True)
+    assert file.read() == x.build_latex()
+
+
 def test_property_setter():
     x = Table(['Name', 'b', 'c', 'd', 'e'])
 

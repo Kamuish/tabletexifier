@@ -20,8 +20,8 @@ class Style:
     def get_intersection(self, col_number, fmt):
         pass
 
-    def _build_header_vlines(self, v_fmt, alignement):
-        return list(map(add, v_fmt, alignement)) + [v_fmt[-1]]
+    def _build_header_vlines(self, v_fmt, alignment):
+        return list(map(add, v_fmt, alignment)) + [v_fmt[-1]]
 
 
 class Tlines(Style):
@@ -58,10 +58,10 @@ class Tlines(Style):
             separation = ['&', '&']
         return separation
 
-    def get_TeX_header(self, header, alignement):
+    def get_TeX_header(self, header, alignment):
         alg_str = ['', '|'] + ['' for _ in header[2:]]
 
-        return self._build_header_vlines(alg_str, alignement)
+        return self._build_header_vlines(alg_str, alignment)
 
 
 class Alines(Style):
@@ -107,9 +107,9 @@ class Alines(Style):
             separation = ['&', '&']
         return separation
 
-    def get_TeX_header(self, header, alignement):
+    def get_TeX_header(self, header, alignment):
         alg_str = ['|' for _ in header]
-        return self._build_header_vlines(alg_str, alignement)
+        return self._build_header_vlines(alg_str, alignment)
 
 
 class MNRAS(Style):
@@ -156,6 +156,6 @@ class MNRAS(Style):
             separation = ['&', '&']
         return separation
 
-    def get_TeX_header(self, header, alignement):
+    def get_TeX_header(self, header, alignment):
         alg_str = ['' for _ in header]
-        return self._build_header_vlines(alg_str, alignement)
+        return self._build_header_vlines(alg_str, alignment)

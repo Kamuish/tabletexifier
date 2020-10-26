@@ -8,7 +8,7 @@ class Table:
         self._header = header
         self._lines = {col_name: [] for col_name in header}
 
-        self._latex_properties = {'alignement': ['c' for _ in header],
+        self._latex_properties = {'alignment': ['c' for _ in header],
                                   'style': table_style}
 
         self._table_style = self._style_map[self._latex_properties['style']]()
@@ -96,28 +96,28 @@ class Table:
                 -----------+----------------------------------------------------
                 style      |  A, T, MNRAS
                 -----------+----------------------------------------------------
-                alignement |  list with LaTeX possibilites for alignement or
+                alignment |  list with LaTeX possibilites for alignment or
                            |   a single value. If a list is provided, it must
-                           |   have the alignement for each column. If a value
+                           |   have the alignment for each column. If a value
                            |  is passed then it will be applied to all columns
 
         """
         if fmt_key not in self._latex_properties:
             raise KeyError("Property {} does not exist".format(fmt_key))
 
-        if fmt_key == 'alignement':
+        if fmt_key == 'alignment':
             valid_options = ['l', 'r', 'c']
             if isinstance(value, str):
                 if value not in valid_options:
-                    raise ValueError("LaTeX column alignement does not recognize {}".format(value))
-                self._latex_properties['alignement'] = [value for _ in self._header]
+                    raise ValueError("LaTeX column alignment does not recognize {}".format(value))
+                self._latex_properties['alignment'] = [value for _ in self._header]
             elif isinstance(value, (tuple, list)):
                 if any(elem not in valid_options for elem in value):
-                    raise ValueError("LaTeX column alignement does not recognize {}".format(value))
+                    raise ValueError("LaTeX column alignment does not recognize {}".format(value))
                 if len(value) != len(self._header):
-                    raise ValueError("Number of alignement properties different than the number of provided columns!")
+                    raise ValueError("Number of alignment properties different than the number of provided columns!")
 
-                self._latex_properties['alignement'] = value
+                self._latex_properties['alignment'] = value
 
         if fmt_key == 'style':
             self._latex_properties[fmt_key] = value
@@ -205,7 +205,7 @@ class Table:
             if ignore_cols is not None and col_name in ignore_cols:
                 continue
             head.append(col_name)
-            center_prop.append(self._latex_properties['alignement'][index])
+            center_prop.append(self._latex_properties['alignment'][index])
 
         col_fmts = self._table_style.get_TeX_header(head, center_prop)
 
@@ -225,8 +225,10 @@ class Table:
         with open(path, mode=mode) as file:
             if write_table:
                 lines = self.get_pretty_print(fmt='string', ignore_cols=ignore_cols)
-                file.write(''.join(lines) + '\n')
+                file.write(''.join(lines))
             if write_LaTeX:
+                if write_table:
+                    file.write('\n')
                 lines = self.build_latex()
                 file.write(lines)
 
