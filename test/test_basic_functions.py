@@ -1,5 +1,5 @@
-from tabletexifier import Table
 import pytest
+from tabletexifier import Table
 
 
 def test_load_data():
