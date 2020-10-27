@@ -198,6 +198,8 @@ class Table:
         """
         Transform the table to LaTeX format and returns as a string, with each line seperated by a new line character
         """
+        if ignore_cols is not None and not isinstance(ignore_cols, list):
+            raise TypeError("ignore_cols must be a list.")
 
         head = []
         center_prop = []
