@@ -85,6 +85,39 @@ def test_remove_row():
     assert x._largest_entry[0] == 5
 
 
+def test_build_latex():
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+    x.add_row(['first', 1, 4, 6, 7])
+
+    result_all_cols = r"""\begin{table}
+\centering
+\caption{\label{Tab:}}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+  Name  & b & c & d & e \\ \hline
+  first & 1 & 4 & 6 & 7 \\ \hline
+\end{tabular}
+\end{table}"""
+
+    assert x.build_latex() == result_all_cols
+
+    result_no_name = r"""\begin{table}
+\centering
+\caption{\label{Tab:}}
+\begin{tabular}{|c|c|c|c|}
+\hline
+  & b & c & d & e \\ \hline
+  & 1 & 4 & 6 & 7 \\ \hline
+\end{tabular}
+\end{table}"""
+
+    assert x.build_latex(ignore_cols=['Name']) == result_no_name
+
+    with pytest.raises(TypeError) as execinfo:
+        x.build_latex(ignore_cols='Name')
+    assert execinfo.value.args[0] == "ignore_cols must be a list."
+
+
 def test_decimals():
 
     x = Table(['Name', 'b', 'c', 'd', 'e'])
@@ -126,3 +159,6 @@ def test_property_setter():
     with pytest.raises(KeyError) as execinfo:
         x.set_design_property(prop_name, 0)
     assert execinfo.value.args[0] == "Property {} does not exist".format(prop_name)
+
+
+
