@@ -159,6 +159,3 @@ def test_property_setter():
     with pytest.raises(KeyError) as execinfo:
         x.set_design_property(prop_name, 0)
     assert execinfo.value.args[0] == "Property {} does not exist".format(prop_name)
-
-
-
