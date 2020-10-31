@@ -9,10 +9,10 @@ def test_load_data():
     x.add_row(['second', 1, 4, 6, 7])
 
     pytest.assume(x.N_columns == 5)
-    pytest.assume(x.N_lines == 2)
+    pytest.assume(x.N_lines == 3)
 
     x.add_row(['third', 5, 6, 7, 8])
-    pytest.assume(x.N_lines == 3)
+    pytest.assume(x.N_lines == 4)
 
 
 def test_retrieve_data():
@@ -23,46 +23,31 @@ def test_retrieve_data():
     x.add_row(['second', 1, 4, 6, 7])
     x.add_row(['third', 5, 6, 7, 8])
 
-    pytest.assume(all([a == b for a, b in zip(x.get_line(0), row_1)]))
-
-    expected_col = ['first', 'second', 'third']
-    for key in ['Name', 0]:
-        pytest.assume(all([a == b for a, b in zip(x.get_column(key, get_header=False), expected_col)]))
-
-    key = 'Name'
-    pytest.assume(all([a == b for a, b in zip(x[key], expected_col)]))
-    with pytest.raises(TypeError) as execinfo:
-        _ = x[0]
-    assert execinfo.value.args[0] == 'Key should be a string'
+    pytest.assume(all([a == b for a, b in zip(x.get_line(1), row_1)]))
 
     expected_col = ['Name', 'first', 'second', 'third']
-    for key in ['Name', 0]:
-        pytest.assume(all([a == b for a, b in zip(x.get_column(key, get_header=True), expected_col)]))
+    for key in [0]:
+        pytest.assume(all([a == b for a, b in zip(x.get_column(key), expected_col)]))
 
     for col_numb in [-1, 100, 'fourth']:
         with pytest.raises(RuntimeError) as execinfo:
             x.get_column(col_numb)
         assert execinfo.value.args[0] == 'Column -{}- does not exist'.format(col_numb)
 
-    with pytest.raises(ValueError) as execinfo:
-        x.get_column(['FOURTH'])
-    assert execinfo.value.args[0] == 'Invalid identifier for the column;'
 
 
 def test_remove_column():
 
     x = Table(['Name', 'b', 'c', 'd', 'e'])
-    row_1 = ['first', 1, 4, 6, 7]
-    x.add_row(row_1)
 
     pytest.assume(x.N_lines == 1)
     x.delete_row(0)
-    x.delete_column("b")
+    x.delete_column(1)
     pytest.assume(x.N_lines == 0)
     pytest.assume(x.N_columns == 4)
 
-    for k in ['Name', 'c', 'd', 'e']:
-        x.delete_column(k)
+    for _ in range(4):
+        x.delete_column(0)
 
     pytest.assume(x.N_columns == 0)
 
@@ -81,7 +66,7 @@ def test_remove_row():
     x.add_row(['second', 1, 4, 6, 7])
 
     assert x._largest_entry[0] == 6
-    x.delete_row(1)
+    x.delete_row(2)
     assert x._largest_entry[0] == 5
 
 
@@ -111,7 +96,7 @@ def test_build_latex():
 \end{tabular}
 \end{table}"""
 
-    assert x.build_latex(ignore_cols=['Name']) == result_no_name
+    assert x.build_latex(ignore_cols=[0]) == result_no_name
 
     with pytest.raises(TypeError) as execinfo:
         x.build_latex(ignore_cols='Name')
