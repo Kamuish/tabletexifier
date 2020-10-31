@@ -1,15 +1,18 @@
-The goal of this project is to allow an easy interface to create Tables that are not only printed nicely in the terminal, but can
-also be easily exported to LaTeX code.
+# Goal of the project 
+
+Provide an easy interface to create Tables that are not only printed nicely in the terminal, but can
+also be easily exported to LaTeX code. It is also desired to easily create tables in the format required by multiple scientific journals.
 
 
 # How to Install
+
 ```
 pip install tabletexifier
 ```
 
 # How to use
-```
 
+```
 >>> from tabletexifier import Table
 >>> x = Table(['Name', 'b','c','d','e'], table_style = 'A')  
 >>> x.add_row(['first',1,4,6,7])
@@ -46,6 +49,7 @@ By printing the table, we have
  ```
 
 It is also possible to set the number of decimal places in the numerical entries:
+
  ```
 >>> x.set_decimal_places(4)
 >>> print(x)
@@ -95,8 +99,8 @@ will update both the ASCII table and the Latex one:
 \caption{\label{Tab:}}
 \begin{tabular}{l|llll}
  Name   & b & c & d & e \\ \hline
- first  & 1 & 4 & 6 & 7 \\ 
- second & 1 & 4 & 6 & 7 \\ 
+ first  & 1 & 4 & 6 & 7 \\
+ second & 1 & 4 & 6 & 7 \\
 \end{tabular}
 \end{table}
 ```
@@ -125,8 +129,8 @@ There is also the option to have all lines in the table (the default option):
  second 1 4 6 7
  ```
 
-
 To store the data to file:
+
 ```
 >>> x.write_to_file("<path>_<to>_<file>", mode='a', write_table = True, write_LaTeX=False)
     # mode is the normal file.write mode
@@ -135,7 +139,18 @@ To store the data to file:
 ```
 
 
- # ToDo list 
-  - [ ] Add proper docs for missing functionalities (e.g. change alignement of columns or the vertical lines)
-  - [ ] Write tests for the functions 	
+#  Roadmap for 1.0
+
+  - Add more common LaTex Tables styles:
+    - [ ] A&A (table and longtable)
+    - [ ] APJ
+  - Functionalities:
+    - [x] Delete rows and columns 
+    - [x] Easier way to change alignement of Latex columns
+    - [ ] Allow to add extra vertical and horizontal lines
+  - QoL:
+    - [ ] Testing the multiple features
+    - [ ] Continuous integration
+    - [ ] Proper documentation
+
   
