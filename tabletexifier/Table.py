@@ -5,8 +5,8 @@ class Table:
     def __init__(self, header, table_style='A'):
 
         self._style_map = {'T': Tlines, 'A': Alines, 'MNRAS': MNRAS}
-        self._header = header
-        self._lines = {col_name: [] for col_name in header}
+        
+        self._lines = [[col_name] for col_name in header]
 
         self._latex_properties = {'alignment': ['c' for _ in header],
                                   'style': table_style}
@@ -29,7 +29,7 @@ class Table:
             if entry_size > self._largest_entry[col_number]:
                 self._largest_entry[col_number] = entry_size
 
-            self._lines[self._header[col_number]].append(new_value)
+            self._lines[col_number].append(new_value)
 
     def get_line(self, line_number):
         """
@@ -40,18 +40,19 @@ class Table:
         line_number: int
             Line number to print; Zero-indexed; Does not count the header!!!
         """
-        return [column[line_number] for column in self._lines.values()]
+        return [column[line_number] for column in self._lines]
 
-    def delete_column(self, key):
+    def delete_column(self, col_number):
         """
         Delete the column number associated with key
         """
         if self.N_columns <= 0:
             raise RuntimeError("Table has no columns")
-        col_index = self._header.index(key)
-        self._largest_entry.pop(col_index)
-        self._header.pop(col_index)
-        del self._lines[key]
+
+        if col_number < 0 or col_number > self.N_columns -1 :
+            raise IndexError("Column number {} does not exist".format(col_number)) 
+        self._largest_entry.pop(col_number)
+        self._lines.pop(col_number)
 
     def delete_row(self, row_number):
         """
@@ -60,33 +61,22 @@ class Table:
         if self.N_lines <= 0:
             raise RuntimeError("Table has no lines of data")
 
-        for key, column in self._lines.items():
+        for index, column in enumerate(self._lines):
             _ = column.pop(row_number)
-            index = self._header.index(key)
             # find the maximum size between the header and the largest element remaining in this column
             if len(column) > 0:
-                self._largest_entry[index] = max(len(max([str(i) for i in column], key=len)), len(str(key)))
+                self._largest_entry[index] = len(max([str(i) for i in column], key=len))
             else:
                 self._largest_entry[index] = 0
 
-    def get_column(self, key, get_header=False):
+    def get_column(self, key):
         """
-            Return a column based on its index (starting at zero) or a key. Normaly only returns values, can also give the header
+            Return a column based on its index (starting at zero). 
         """
-        if isinstance(key, str):
-            if key not in self._header:
-                raise RuntimeError("Column -{}- does not exist".format(key))
-            data_column = self._lines[key]
-            head = key
-        elif isinstance(key, int):
-            if key < 0 or key > self.N_columns:
-                raise RuntimeError("Column -{}- does not exist".format(key))
-            data_column = self._lines[self._header[key]]
-            head = self._header[key]
-        else:
-            raise ValueError("Invalid identifier for the column;")
-        if get_header:
-            return [head] + data_column
+        if not isinstance(key, int) or key < 0 or key > self.N_columns :
+            raise RuntimeError("Column -{}- does not exist".format(key))
+
+        data_column = self._lines[key]
         return data_column
 
     def set_design_property(self, fmt_key, value):
@@ -110,11 +100,11 @@ class Table:
             if isinstance(value, str):
                 if value not in valid_options:
                     raise ValueError("LaTeX column alignment does not recognize {}".format(value))
-                self._latex_properties['alignment'] = [value for _ in self._header]
+                self._latex_properties['alignment'] = [value for _ in self._lines]
             elif isinstance(value, (tuple, list)):
                 if any(elem not in valid_options for elem in value):
                     raise ValueError("LaTeX column alignment does not recognize {}".format(value))
-                if len(value) != len(self._header):
+                if len(value) != len(self._lines):
                     raise ValueError("Number of alignment properties different than the number of provided columns!")
 
                 self._latex_properties['alignment'] = value
@@ -145,6 +135,7 @@ class Table:
         output_lines = all_rows
 
         out = []
+        print(output_lines)
         for index, row in enumerate(output_lines):
             vlines = self._table_style.get_hline(index, line_separator, fmt)
             out.append(vlines[0]+row+vlines[1])
@@ -154,15 +145,15 @@ class Table:
 
         line_entry = lambda value, line_type, spaces: '{1}{0}{3}{2}'.format(value, *line_type, ' '*spaces)
 
-        output_lines = [' ' for _ in range(self.N_lines+1)] # each line is an entry; Easy to add horizontal lines later one
+        output_lines = [' ' for _ in range(self.N_lines)] # each line is an entry; Easy to add horizontal lines later one
 
         line_separator = ' ' + self._table_style.get_intersection(col_number=0, fmt=fmt)[0]
         ignore_cols = ignore_cols if ignore_cols is not None else []
         for col_number in range(self.N_columns):
-            if self._header[col_number] in ignore_cols:
+            if col_number in ignore_cols:
                 continue
 
-            column = self.get_column(col_number, get_header=True)
+            column = self.get_column(col_number)
 
             largest_entry = self._largest_entry[col_number]
 
@@ -201,15 +192,15 @@ class Table:
         if ignore_cols is not None and not isinstance(ignore_cols, list):
             raise TypeError("ignore_cols must be a list.")
 
-        head = []
         center_prop = []
-        for index, col_name in enumerate(self._header):
-            if ignore_cols is not None and col_name in ignore_cols:
+        if ignore_cols is  None:
+            ignore_cols = []
+        for col_index, _ in enumerate(self._lines):
+            if ignore_cols is not None and col_index in ignore_cols:
                 continue
-            head.append(col_name)
-            center_prop.append(self._latex_properties['alignment'][index])
+            center_prop.append(self._latex_properties['alignment'][col_index])
 
-        col_fmts = self._table_style.get_TeX_header(head, center_prop)
+        col_fmts = self._table_style.get_TeX_header(self.N_columns - len(ignore_cols), center_prop)
 
         header = [r'\begin{table}', r'\centering', r'\caption{\label{Tab:}}', r'\begin{tabular}{' + ''.join(col_fmts) + '}']
         footer = [r'\end{tabular}', r'\end{table}']
@@ -236,18 +227,15 @@ class Table:
 
     @property
     def N_columns(self):
-        return len(self._header)
+        return len(self._lines)
 
     @property
     def N_lines(self):
         if self.N_columns <= 0:
             return 0
-        return len(self._lines[self._header[0]])
+        return len(self._lines[0])
 
     def __str__(self):
         return ''.join(self.get_pretty_print(fmt='string', ignore_cols=[]))
 
-    def __getitem__(self, key):
-        if isinstance(key, str):
-            return self._lines[key]
-        raise TypeError("Key should be a string")
+    
