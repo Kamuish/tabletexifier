@@ -156,6 +156,6 @@ class MNRAS(Style):
             separation = ['&', '&']
         return separation
 
-    def get_TeX_header(self, heahead_sizeder, alignment):
+    def get_TeX_header(self, head_size, alignment):
         alg_str = ['|' for _ in range(head_size)]
         return self._build_header_vlines(alg_str, alignment)
