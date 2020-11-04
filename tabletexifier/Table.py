@@ -135,7 +135,6 @@ class Table:
         output_lines = all_rows
 
         out = []
-        print(output_lines)
         for index, row in enumerate(output_lines):
             vlines = self._table_style.get_hline(index, line_separator, fmt)
             out.append(vlines[0]+row+vlines[1])

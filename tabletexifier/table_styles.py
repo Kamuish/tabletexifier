@@ -58,8 +58,8 @@ class Tlines(Style):
             separation = ['&', '&']
         return separation
 
-    def get_TeX_header(self, header, alignment):
-        alg_str = ['', '|'] + ['' for _ in header[2:]]
+    def get_TeX_header(self, head_size, alignment):
+        alg_str = ['|' for _ in range(head_size)]
 
         return self._build_header_vlines(alg_str, alignment)
 
@@ -156,6 +156,6 @@ class MNRAS(Style):
             separation = ['&', '&']
         return separation
 
-    def get_TeX_header(self, header, alignment):
-        alg_str = ['' for _ in header]
+    def get_TeX_header(self, head_size, alignment):
+        alg_str = ['|' for _ in range(head_size)]
         return self._build_header_vlines(alg_str, alignment)
