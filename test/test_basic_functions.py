@@ -35,8 +35,7 @@ def test_retrieve_data():
         assert execinfo.value.args[0] == 'Column -{}- does not exist'.format(col_numb)
 
 
-
-def test_remove_column():
+def test_delete_column():
 
     x = Table(['Name', 'b', 'c', 'd', 'e'])
 
@@ -60,7 +59,7 @@ def test_remove_column():
     assert execinfo.value.args[0] == 'Table has no columns'
 
 
-def test_remove_row():
+def test_delete_row():
     x = Table(['Name', 'b', 'c', 'd', 'e'])
     x.add_row(['first', 1, 4, 6, 7])
     x.add_row(['second', 1, 4, 6, 7])
@@ -68,6 +67,15 @@ def test_remove_row():
     assert x._largest_entry[0] == 6
     x.delete_row(2)
     assert x._largest_entry[0] == 5
+
+
+def test_set_design_property():
+    x = Table(['Name', 'b', 'c', 'd', 'e'])
+
+    prop_name = 1
+    with pytest.raises(KeyError) as execinfo:
+        x.set_design_property(prop_name, 0)
+    assert execinfo.value.args[0] == "Property {} does not exist".format(prop_name)
 
 
 def test_build_latex():
@@ -103,7 +111,7 @@ def test_build_latex():
     assert execinfo.value.args[0] == "ignore_cols must be a list."
 
 
-def test_decimals():
+def test_set_decimal_places():
 
     x = Table(['Name', 'b', 'c', 'd', 'e'])
     row_1 = ['first', 1, 4, 6, 7]
@@ -135,12 +143,3 @@ def test_write_to_file(tmpdir):
     file = tmpdir.join('output_latex.txt')
     x.write_to_file(file.strpath, write_table=False, write_LaTeX=True)
     assert file.read() == x.build_latex()
-
-
-def test_property_setter():
-    x = Table(['Name', 'b', 'c', 'd', 'e'])
-
-    prop_name = 1
-    with pytest.raises(KeyError) as execinfo:
-        x.set_design_property(prop_name, 0)
-    assert execinfo.value.args[0] == "Property {} does not exist".format(prop_name)
