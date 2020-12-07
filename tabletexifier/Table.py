@@ -236,5 +236,3 @@ class Table:
 
     def __str__(self):
         return ''.join(self.get_pretty_print(fmt='string', ignore_cols=[]))
-
-    

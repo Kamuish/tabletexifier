@@ -153,4 +153,17 @@ To store the data to file:
     - [ ] Continuous integration
     - [ ] Proper documentation
 
-  
+# Development
+
+Create a virtual environment and run
+```
+pip install -r requirements_dev.txt
+```
+in order to install development dependencies.
+
+
+In order to run the tests and see coverage reports, use
+```
+pytest --cov=. test --cov-report html
+```
+
