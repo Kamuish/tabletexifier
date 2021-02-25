@@ -1,10 +1,10 @@
-from tabletexifier.table_styles import Tlines, Alines, MNRAS
+from tabletexifier.table_styles import Tlines, Alines, MNRAS, NoLines
 
 
 class Table:
     def __init__(self, header, table_style='A'):
 
-        self._style_map = {'T': Tlines, 'A': Alines, 'MNRAS': MNRAS}
+        self._style_map = {'T': Tlines, 'A': Alines, 'MNRAS': MNRAS, 'NoLines':NoLines}
         
         self._lines = [[col_name] for col_name in header]
 
@@ -144,9 +144,9 @@ class Table:
 
         line_entry = lambda value, line_type, spaces: '{1}{0}{3}{2}'.format(value, *line_type, ' '*spaces)
 
-        output_lines = [' ' for _ in range(self.N_lines)] # each line is an entry; Easy to add horizontal lines later one
+        output_lines = ['' for _ in range(self.N_lines)] # each line is an entry; Easy to add horizontal lines later one
 
-        line_separator = ' ' + self._table_style.get_intersection(col_number=0, fmt=fmt)[0]
+        line_separator = '' + self._table_style.get_intersection(col_number=0, fmt=fmt)[0]
         ignore_cols = ignore_cols if ignore_cols is not None else []
         for col_number in range(self.N_columns):
             if col_number in ignore_cols:
