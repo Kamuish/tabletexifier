@@ -14,7 +14,7 @@ class Table:
         self._table_style = self._style_map[self._latex_properties['style']]()
         self._journal_style = None
 
-        self._largest_entry = [len(head) for head in header]
+        self._largest_entry = [len(str(head)) for head in header]
 
         # Number of decimal places in the numbers
         self._decimal_places = None
