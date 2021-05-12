@@ -69,7 +69,7 @@ class Alines(Style):
         """
         Return vline separator for a given column. Returns an array with the separator for the left and right
         """
-        out = [' ', '']
+        out = ['', '']
         if fmt == 'string':
             out = [' ', ' |']
             if col_number == 0:
@@ -117,7 +117,7 @@ class MNRAS(Style):
         """
         Return vline separator for a given column. Returns an array with the separator for the left and right
         """
-        out = [' ', '']
+        out = ['', '']
         if fmt == 'string':
             out = [' ', '']
             if col_number == 0:
@@ -158,4 +158,45 @@ class MNRAS(Style):
 
     def get_TeX_header(self, head_size, alignment):
         alg_str = ['|' for _ in range(head_size)]
+        return self._build_header_vlines(alg_str, alignment)
+
+class NoLines(Style):
+    def get_vline(self, col_number, fmt):
+        """
+        Return vline separator for a given column. Returns an array with the separator for the left and right
+        """
+        out = ['', ' ']
+        if fmt == 'string':
+            out = [' ', ' ']
+            if col_number == 0:
+                out = ['', '']
+        elif fmt == 'LaTeX':
+            if col_number == 0:
+                out = [' ', '']
+            else:
+                out = [' & ', '']
+        return out
+
+    def get_hline(self, row_number, separator, fmt):
+        """
+        Return horizontal separator for a given column. Returns an array with the separator for the above and below
+        """
+        out = ['', '\n']
+        if fmt == 'string':
+            if row_number == 0:
+                out = ['', '\n']
+        if fmt == 'LaTeX':
+            out = ['', r'\\']
+        return out
+
+    def get_intersection(self, col_number, fmt):
+
+        if fmt == 'string':
+            separation = ['', ' ']
+        elif fmt == 'LaTeX':
+            separation = ['&', '&']
+        return separation
+
+    def get_TeX_header(self, head_size, alignment):
+        alg_str = ['' for _ in range(head_size)]
         return self._build_header_vlines(alg_str, alignment)
