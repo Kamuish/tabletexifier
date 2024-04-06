@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="tabletexifier", 
-    version="0.1.7",
+    name="tabletexifier",
+    version="0.2",
     author="Kamuish",
     author_email="andremiguel952@gmail.com",
     description="Pretty formatted tables that can be exported to LaTeX",
@@ -18,5 +18,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )
