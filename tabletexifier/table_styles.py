@@ -90,7 +90,7 @@ class Style:
                         new_row += "+"
 
                 else:
-                    new_row += "-" * col_size
+                    new_row += "-" * (col_size + 1)
                 out += new_row
             else:
                 out = "" * (col_size + 2)
@@ -105,9 +105,9 @@ class Style:
         cols = ""
 
         for index in range(self.ncols):
-            cols += self.table_properties["column_alignement"]
-            if index in self.vline_locs:
+            if index in self.get_vline_positions():
                 cols += "|"
+            cols += self.table_properties["column_alignement"]
 
         base_header = [
             r"\begin{table}[H]",
@@ -124,7 +124,7 @@ class Style:
 
 class Tlines(Style):
     def __init__(self):
-        super().__init__(vline_locs=(1), hline_locs=(1,))
+        super().__init__(vline_locs=(1,), hline_locs=(1,))
 
 
 class Alines(Style):

@@ -1,16 +1,25 @@
-from typing import List
+from typing import List, Iterable
 from tabletexifier.table_styles import Tlines, Alines, MNRAS, NoLines, AA
 from .Cell import Cell
 from .exceptions import CellNotFound, ColumnDoesNotExist, RowDoesNotExist
 
 
 class Table:
+    """Main Table Class that will store the different cells, supports different styles of tables:
+
+    Values for the table_style:
+        - A -- All lines are drawn
+        - A&A --  Follows the format of the A&A journal
+        - T -- vertical line after the first col and horizontal line after first row
+        - NoLines --  No lines
+    """
+
     def __init__(
         self,
-        header,
-        table_style="A&A",
+        header: Iterable[str],
+        table_style: str = "A&A",
     ):
-        self._style_map = {
+        self.style_map = {
             "T": Tlines,
             "A": Alines,
             "MNRAS": MNRAS,
@@ -18,7 +27,7 @@ class Table:
             "A&A": AA,
         }
 
-        self._table_style = self._style_map[table_style]()
+        self._table_style = self.style_map[table_style]()
 
         self._largest_entry = [len(str(head)) for head in header]
 
@@ -29,6 +38,9 @@ class Table:
         self.nrows = 0
         self.ncols = len(header)
         self.add_row(header)
+
+    def update_table_style(self, new_style):
+        self._table_style = self.style_map[new_style]()
 
     def add_table_caption(self, caption: str):
         self._table_style.set_LaTeX_property("caption", caption)
@@ -238,7 +250,7 @@ class Table:
             row_sep = self._table_style.get_row_separation(
                 row_number=self.nrows,
                 col_number=col_index,
-                col_size=max_size,
+                col_size=text_sizes[col_index],
                 fmt=fmt,
                 cell=self.get_cell_with_pos(row_number=row_index, col_number=col_index),
             )
@@ -261,6 +273,17 @@ class Table:
         return f"\n{head}\n{main_text}\n{foot}"
 
     def set_decimal_places(self, value: int):
+        """Set the number of decimal places for the representation
+
+        Warning: this is only applied to the entries that exist whenever
+        this function was called
+
+        Args:
+            value (int): Number of decimal places
+
+        Raises:
+            ValueError: If the value is below zero
+        """
         if value < 0:
             raise ValueError(
                 f"The number of decimal places must be positive. Got {value}"
@@ -275,7 +298,7 @@ class Table:
     ):
         with open(path, mode=mode) as file:
             if write_table:
-                lines = self.get_pretty_print(fmt="string", ignore_cols=ignore_cols)
+                lines = self.get_pretty_print(fmt="text", ignore_cols=ignore_cols)
                 file.write("".join(lines))
             if write_LaTeX:
                 if write_table:
