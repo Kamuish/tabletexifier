@@ -1,0 +1,52 @@
+-------------------------------------
+-------------------------------------
+   foo        bar           zeta      
+-------------------------------------
+   1.00       2.00      string_value  
+  third    [1, 1, 1]         []       
+-------------------------------------
+
+\begin{table}[H]
+\caption{}
+\label{}
+\centering
+\begin{tabular}{ccc}\hline \hline
+  foo   &    bar     &     zeta     \\ \hline
+   1    &     2      & string_value \\
+ third  & [1, 1, 1]  &      []      \\ \hline
+\end{tabular}
+\end{table}-------------------------------------
+-------------------------------------
+   foo        bar           zeta      
+-------------------------------------
+   1.00       2.00      string_value  
+  third    [1, 1, 1]         []       
+-------------------------------------
+
+\begin{table}[H]
+\caption{}
+\label{}
+\centering
+\begin{tabular}{ccc}\hline \hline
+  foo   &    bar     &     zeta     \\ \hline
+   1    &     2      & string_value \\
+ third  & [1, 1, 1]  &      []      \\ \hline
+\end{tabular}
+\end{table}-------------------------------------
+-------------------------------------
+   foo        bar           zeta      
+-------------------------------------
+   1.00       2.00      string_value  
+  third    [1, 1, 1]         []       
+-------------------------------------
+
+\begin{table}[H]
+\caption{}
+\label{}
+\centering
+\begin{tabular}{ccc}\hline \hline
+  foo   &    bar     &     zeta     \\ \hline
+   1    &     2      & string_value \\
+ third  & [1, 1, 1]  &      []      \\ \hline
+\end{tabular}
+\end{table}
