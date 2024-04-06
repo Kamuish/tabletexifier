@@ -2,3 +2,7 @@ pytest
 pytest-assume
 pytest-cov
 six
+sphinx
+nbsphinx
+jupyter
+sphinx-rtd-theme

@@ -2,3 +2,10 @@
 *.json 
 
 htmlcov/*
+build/*
+docs/_build/*
+
+*.idea
+
+*.egg*
+dist/*
