@@ -1,7 +1,7 @@
 from typing import List
 from tabletexifier.table_styles import Tlines, Alines, MNRAS, NoLines, AA
 from .Cell import Cell
-from .exceptions import ColumnDoesNotExist, RowDoesNotExist
+from .exceptions import CellNotFound, ColumnDoesNotExist, RowDoesNotExist
 
 
 class Table:
@@ -42,7 +42,7 @@ class Table:
     def add_hline(self, loc):
         self._table_style.add_hline(loc)
 
-    def add_row(self, row):
+    def add_row(self, row, multirow=None, multicol=None):
         """
         Adds a new row to the table; Assumes that the order is the same as the one given in the header
         """
@@ -50,6 +50,7 @@ class Table:
         for index, val in enumerate(row):
             new_cell = Cell(content=val, origin=[self.nrows, index])
             new_cell.previous_col = previous
+            previous = new_cell
             self._tableCells.append(new_cell)
 
         newly_added_cells = self._tableCells[-len(row) :]
@@ -132,6 +133,51 @@ class Table:
             text_sizes.append(max_size)
         return text_sizes
 
+    def get_cell_with_pos(self, row_number, col_number) -> Cell:
+        row = self.get_line(row_number)
+        found = False
+        for entry in row:
+            if entry.col_number == col_number:
+                found = True
+                break
+        if not found:
+            raise CellNotFound(f"Did not found a cell on {row_number=}, {col_number=}")
+        return entry
+
+    def set_cell_as_multi_row(self, start_row, start_col, number_of_rows):
+        """Set one cell as multi-row
+
+        Args:
+            start_row (_type_): _description_
+            start_col (_type_): _description_
+            number_of_rows (_type_): _description_
+        """
+        cell = self.get_cell_with_pos(start_row, start_col)
+        next_cell = cell.next_row
+
+        for _ in range(number_of_rows):
+            next_cell.is_blank = True
+            next_cell = next_cell.next_row
+
+        cell.update_size(nrows=1 + number_of_rows)
+
+    def set_cell_as_multi_col(self, start_row, start_col, number_of_cols):
+        """Set one cell as multi-row
+
+        Args:
+            start_row (_type_): _description_
+            start_col (_type_): _description_
+            number_of_rows (_type_): _description_
+        """
+        cell = self.get_cell_with_pos(start_row, start_col)
+        next_cell = cell.next_col
+
+        for _ in range(number_of_cols):
+            next_cell.is_blank = True
+            next_cell = next_cell.next_col
+
+        cell.update_size(ncols=1 + number_of_cols)
+
     def get_pretty_print(self, ignore_cols, fmt="text") -> List[str]:
         """Generate the textual representation of the table, under a given format
 
@@ -146,29 +192,37 @@ class Table:
         lines = []
         self._table_style.set_size(rows=self.nrows, cols=self.N_columns)
         for row_index in range(self.nrows):
-            row = [i.generate_text() for i in self.get_line(row_index)]
+            if fmt == "text":
+                row = [i.generate_text() for i in self.get_line(row_index)]
+            elif fmt == "LaTeX":
+                row = [i.generate_LaTeX() for i in self.get_line(row_index)]
 
             line = ""
             row_separator = ""
             for col_index, col_value in enumerate(row):
+                cell = self.get_cell_with_pos(
+                    row_number=row_index, col_number=col_index
+                )
                 max_size = text_sizes[col_index]
                 padding = " " * (int((max_size - len(col_value)) / 2))
 
-                entry = f"{padding}{col_value}{padding}"
+                entry = f"{padding}{col_value}"
+                entry += " " * (max_size - len(entry))
                 col_sep = self._table_style.get_col_separation(
-                    row_number=row_index, col_number=col_index, fmt=fmt
+                    row_number=row_index, col_number=col_index, cell=cell, fmt=fmt
                 )
                 row_sep = self._table_style.get_row_separation(
                     row_number=row_index,
                     col_number=col_index,
                     col_size=max_size,
+                    cell=cell,
                     fmt=fmt,
                 )
 
                 line = f"{line}{col_sep}{entry}"
                 row_separator = f"{row_separator}{row_sep}"
             col_sep = self._table_style.get_col_separation(
-                row_number=row_index, col_number=self.ncols, fmt=fmt
+                row_number=row_index, col_number=self.ncols, cell=cell, fmt=fmt
             )
             line = f"{line}{col_sep}"
             dup, n_times = self._table_style.check_if_duplicate_row(row_index)
@@ -186,6 +240,7 @@ class Table:
                 col_number=col_index,
                 col_size=max_size,
                 fmt=fmt,
+                cell=self.get_cell_with_pos(row_number=row_index, col_number=col_index),
             )
             row_separator = f"{row_separator}{row_sep}"
         lines.append(row_separator)
