@@ -1,37 +1,74 @@
-from tabletexifier.table_styles import Tlines, Alines, MNRAS, NoLines
+from typing import List
+from tabletexifier.table_styles import Tlines, Alines, MNRAS, NoLines, AA
+from .Cell import Cell
+from .exceptions import ColumnDoesNotExist, RowDoesNotExist
 
 
 class Table:
-    def __init__(self, header, table_style='A'):
+    def __init__(
+        self,
+        header,
+        table_style="A&A",
+    ):
+        self._style_map = {
+            "T": Tlines,
+            "A": Alines,
+            "MNRAS": MNRAS,
+            "NoLines": NoLines,
+            "A&A": AA,
+        }
 
-        self._style_map = {'T': Tlines, 'A': Alines, 'MNRAS': MNRAS, 'NoLines':NoLines}
-        
-        self._lines = [[col_name] for col_name in header]
-
-        self._latex_properties = {'alignment': ['c' for _ in header],
-                                  'style': table_style}
-
-        self._table_style = self._style_map[self._latex_properties['style']]()
-        self._journal_style = None
+        self._table_style = self._style_map[table_style]()
 
         self._largest_entry = [len(str(head)) for head in header]
 
         # Number of decimal places in the numbers
         self._decimal_places = None
 
+        self._tableCells = []
+        self.nrows = 0
+        self.ncols = len(header)
+        self.add_row(header)
+
+    def add_table_caption(self, caption: str):
+        self._table_style.set_LaTeX_property("caption", caption)
+
+    def add_table_label(self, label: str):
+        self._table_style.set_LaTeX_property("label", label)
+
+    def add_vline(self, loc):
+        self._table_style.add_vline(loc)
+
+    def add_hline(self, loc):
+        self._table_style.add_hline(loc)
+
     def add_row(self, row):
         """
         Adds a new row to the table; Assumes that the order is the same as the one given in the header
         """
-        for col_number, new_value in enumerate(row):
+        previous = None
+        for index, val in enumerate(row):
+            new_cell = Cell(content=val, origin=[self.nrows, index])
+            new_cell.previous_col = previous
+            self._tableCells.append(new_cell)
 
-            entry_size = len(str(new_value))
-            if entry_size > self._largest_entry[col_number]:
-                self._largest_entry[col_number] = entry_size
+        newly_added_cells = self._tableCells[-len(row) :]
+        # Make the links for the next column
+        for index, cell in enumerate(
+            newly_added_cells[:-1]
+        ):  # the last col does not have a "next_col"
+            cell.next_col = newly_added_cells[index + 1]
 
-            self._lines[col_number].append(new_value)
+        if self.nrows > 0:
+            # Make the links for the previous row
+            prev_row = self.get_line(self.nrows - 1)
+            for upper, lower in zip(prev_row, newly_added_cells):
+                upper.next_row = lower
+                lower.previous_row = upper
 
-    def get_line(self, line_number):
+        self.nrows += 1
+
+    def get_line(self, line_number) -> List[Cell]:
         """
         Return an entire line; The line number is zero-indexed
 
@@ -40,199 +77,166 @@ class Table:
         line_number: int
             Line number to print; Zero-indexed; Does not count the header!!!
         """
-        return [column[line_number] for column in self._lines]
+        line = []
+        first_cell = self._tableCells[0]
+        while first_cell.row_number != line_number:
+            first_cell = first_cell.next_row
+            if first_cell is None:
+                raise RowDoesNotExist(f"Row {line_number} does not exist")
 
-    def delete_column(self, col_number):
+        while first_cell is not None:
+            line.append(first_cell)
+            first_cell = first_cell.next_col
+        return line
+
+    def get_column(self, column_number: int) -> List[Cell]:
+        """Get a column through a zero-indexed index
+
+        Args:
+            column_number (int): Column number
+
+        Raises:
+            ColumnDoesNotExist: If the column does not exist
+
+        Returns:
+            List[Cell]: List with Cell objects
         """
-        Delete the column number associated with key
+        col = []
+
+        first_cell = self._tableCells[0]
+        while first_cell.col_number != column_number:
+            first_cell = first_cell.next_col
+            if first_cell is None:
+                raise ColumnDoesNotExist(f"Column {column_number} does not exist")
+
+        while first_cell is not None:
+            col.append(first_cell)
+            first_cell = first_cell.next_row
+        return col
+
+    def compute_max_text_size_of_cols(self) -> List[int]:
+        """Find the maximum text size that we will need for each column to esure formatted outputs in the terminal
+
+        Returns:
+            List[int]: List with max size of each column
         """
-        if self.N_columns <= 0:
-            raise RuntimeError("Table has no columns")
-
-        if col_number < 0 or col_number > self.N_columns -1 :
-            raise IndexError("Column number {} does not exist".format(col_number)) 
-        self._largest_entry.pop(col_number)
-        self._lines.pop(col_number)
-
-    def delete_row(self, row_number):
-        """
-        Delete a given row (the first non-header line is the first to be removed)
-        """
-        if self.N_lines <= 0:
-            raise RuntimeError("Table has no lines of data")
-
-        for index, column in enumerate(self._lines):
-            _ = column.pop(row_number)
-            # find the maximum size between the header and the largest element remaining in this column
-            if len(column) > 0:
-                self._largest_entry[index] = len(max([str(i) for i in column], key=len))
-            else:
-                self._largest_entry[index] = 0
-
-    def get_column(self, key):
-        """
-            Return a column based on its index (starting at zero). 
-        """
-        if not isinstance(key, int) or key < 0 or key > self.N_columns :
-            raise RuntimeError("Column -{}- does not exist".format(key))
-
-        data_column = self._lines[key]
-        return data_column
-
-    def set_design_property(self, fmt_key, value):
-        """
-            Allow to configure the table properties. Currently available:
-                fmt_key    |   value
-                -----------+----------------------------------------------------
-                style      |  A, T, MNRAS
-                -----------+----------------------------------------------------
-                alignment |  list with LaTeX possibilites for alignment or
-                           |   a single value. If a list is provided, it must
-                           |   have the alignment for each column. If a value
-                           |  is passed then it will be applied to all columns
-
-        """
-        if fmt_key not in self._latex_properties:
-            raise KeyError("Property {} does not exist".format(fmt_key))
-
-        if fmt_key == 'alignment':
-            valid_options = ['l', 'r', 'c']
-            if isinstance(value, str):
-                if value not in valid_options:
-                    raise ValueError("LaTeX column alignment does not recognize {}".format(value))
-                self._latex_properties['alignment'] = [value for _ in self._lines]
-            elif isinstance(value, (tuple, list)):
-                if any(elem not in valid_options for elem in value):
-                    raise ValueError("LaTeX column alignment does not recognize {}".format(value))
-                if len(value) != len(self._lines):
-                    raise ValueError("Number of alignment properties different than the number of provided columns!")
-
-                self._latex_properties['alignment'] = value
-
-        if fmt_key == 'style':
-            self._latex_properties[fmt_key] = value
-            self._table_style = self._style_map[self._latex_properties['style']]()
-
-    def _get_table_info(self, col_number, fmt):
-        """
-            Return the charactcer that will separate two entries in a row. Return this separation on a column by column basis
-        """
-        line_type = self._table_style.get_vline(col_number, fmt)
-        intersection = self._table_style.get_intersection(col_number, fmt)[1]
-        return line_type, intersection
-
-    def _add_horizontal_lines(self, all_rows, line_separator, fmt):
-        """
-            Query the style class for the presence (or not) of a vertical separation between two consecutive lines in the table
-
-            Parameters
-            ----------
-            all_rows: list
-                List with the rows of data
-            line_separator: str
-                String build during the row creation. Used for the ASCII representation of the table
-        """
-        output_lines = all_rows
-
-        out = []
-        for index, row in enumerate(output_lines):
-            vlines = self._table_style.get_hline(index, line_separator, fmt)
-            out.append(vlines[0]+row+vlines[1])
-        return out
-
-    def get_pretty_print(self, ignore_cols, fmt='string'):
-
-        line_entry = lambda value, line_type, spaces: '{1}{0}{3}{2}'.format(value, *line_type, ' '*spaces)
-
-        output_lines = ['' for _ in range(self.N_lines)] # each line is an entry; Easy to add horizontal lines later one
-
-        line_separator = '' + self._table_style.get_intersection(col_number=0, fmt=fmt)[0]
-        ignore_cols = ignore_cols if ignore_cols is not None else []
+        text_sizes = []
         for col_number in range(self.N_columns):
-            if col_number in ignore_cols:
-                continue
+            col = self.get_column(col_number)
+            col_size = [len(i.generate_text()) for i in col]
+            max_size = max(col_size)
+            if not max_size % 2 == 0:
+                max_size += 1
 
-            column = self.get_column(col_number)
+            max_size += 2
+            text_sizes.append(max_size)
+        return text_sizes
 
-            largest_entry = self._largest_entry[col_number]
+    def get_pretty_print(self, ignore_cols, fmt="text") -> List[str]:
+        """Generate the textual representation of the table, under a given format
 
-            # update the column to find if there is a "rounded" integer with more places than the current largest element
-            if self._decimal_places is not None:
-                updated_column = []
-                for col_entry in column:
-                    if isinstance(col_entry, (int, float)):
-                        col_entry = '{:.{}f}'.format(col_entry, self._decimal_places)
-                    else:
-                        col_entry = str(col_entry)
-                    updated_column.append(col_entry)
-                column = updated_column
-                largest_entry = len(max(column, key = len))
+        Args:
+            ignore_cols (_type_): _description_
+            fmt (str, optional): Which format to use, between text and LaTeX. Defaults to "text".
 
-            line_type, intersection = self._get_table_info(col_number, fmt)
-
-            for line_index, col_entry in enumerate(column):
-                entry = line_entry(col_entry, line_type, (largest_entry - len(str(col_entry))))
-                output_lines[line_index] = output_lines[line_index] + entry
-
-            if col_number == 0:  # account for the first edge separator, i.e. the first "|" or " "
-                dashed_number = len(entry) - 2
-            else:
-                dashed_number = len(entry) - 1
-
-            line_separator = line_separator + '-'*(dashed_number) + intersection
-
-        output_lines = self._add_horizontal_lines(output_lines, line_separator, fmt)
-        return output_lines
-
-    def build_latex(self, ignore_cols=None):
+        Returns:
+            List[str]: _description_
         """
-        Transform the table to LaTeX format and returns as a string, with each line seperated by a new line character
+        text_sizes = self.compute_max_text_size_of_cols()
+        lines = []
+        self._table_style.set_size(rows=self.nrows, cols=self.N_columns)
+        for row_index in range(self.nrows):
+            row = [i.generate_text() for i in self.get_line(row_index)]
+
+            line = ""
+            row_separator = ""
+            for col_index, col_value in enumerate(row):
+                max_size = text_sizes[col_index]
+                padding = " " * (int((max_size - len(col_value)) / 2))
+
+                entry = f"{padding}{col_value}{padding}"
+                col_sep = self._table_style.get_col_separation(
+                    row_number=row_index, col_number=col_index, fmt=fmt
+                )
+                row_sep = self._table_style.get_row_separation(
+                    row_number=row_index,
+                    col_number=col_index,
+                    col_size=max_size,
+                    fmt=fmt,
+                )
+
+                line = f"{line}{col_sep}{entry}"
+                row_separator = f"{row_separator}{row_sep}"
+            col_sep = self._table_style.get_col_separation(
+                row_number=row_index, col_number=self.ncols, fmt=fmt
+            )
+            line = f"{line}{col_sep}"
+            dup, n_times = self._table_style.check_if_duplicate_row(row_index)
+            if not dup:
+                n_times = 1
+            for _ in range(n_times):
+                lines.append(row_separator)
+
+            lines.append(line)
+        # grab the last line of the table
+        row_separator = ""
+        for col_index, col_value in enumerate(row):
+            row_sep = self._table_style.get_row_separation(
+                row_number=self.nrows,
+                col_number=col_index,
+                col_size=max_size,
+                fmt=fmt,
+            )
+            row_separator = f"{row_separator}{row_sep}"
+        lines.append(row_separator)
+        return "\n".join((i for i in lines if i))
+
+    def build_latex(self, ignore_cols=None) -> List[str]:
+        """Generate the LaTeX representation of the table
+
+        Args:
+            ignore_cols (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            List[str]: _description_
         """
-        if ignore_cols is not None and not isinstance(ignore_cols, list):
-            raise TypeError("ignore_cols must be a list.")
+        main_text = self.get_pretty_print(False, "LaTeX")
+        head = self._table_style.get_TeX_header()
+        foot = self._table_style.get_TeX_footer()
+        return f"\n{head}\n{main_text}\n{foot}"
 
-        center_prop = []
-        if ignore_cols is  None:
-            ignore_cols = []
-        for col_index, _ in enumerate(self._lines):
-            if ignore_cols is not None and col_index in ignore_cols:
-                continue
-            center_prop.append(self._latex_properties['alignment'][col_index])
+    def set_decimal_places(self, value: int):
+        if value < 0:
+            raise ValueError(
+                f"The number of decimal places must be positive. Got {value}"
+            )
 
-        col_fmts = self._table_style.get_TeX_header(self.N_columns - len(ignore_cols), center_prop)
-
-        header = [r'\begin{table}', r'\centering', r'\caption{\label{Tab:}}', r'\begin{tabular}{' + ''.join(col_fmts) + '}']
-        footer = [r'\end{tabular}', r'\end{table}']
-
-        output_lines = self.get_pretty_print(fmt='LaTeX', ignore_cols=ignore_cols)
-        return '\n'.join([*header, *output_lines, *footer])
-
-    def set_decimal_places(self, value):
-        if not isinstance(value, int):
-            raise TypeError("The decimal places must be an integer")
         self._decimal_places = value
+        for c in self._tableCells:
+            c.set_decimal_places(value)
 
-    def write_to_file(self, path, mode='a', write_table=True, write_LaTeX=False, ignore_cols=None):
-
+    def write_to_file(
+        self, path, mode="a", write_table=True, write_LaTeX=False, ignore_cols=None
+    ):
         with open(path, mode=mode) as file:
             if write_table:
-                lines = self.get_pretty_print(fmt='string', ignore_cols=ignore_cols)
-                file.write(''.join(lines))
+                lines = self.get_pretty_print(fmt="string", ignore_cols=ignore_cols)
+                file.write("".join(lines))
             if write_LaTeX:
                 if write_table:
-                    file.write('\n')
+                    file.write("\n")
                 lines = self.build_latex()
                 file.write(lines)
 
     @property
-    def N_columns(self):
-        return len(self._lines)
+    def N_columns(self) -> int:
+        """Return the number of columns in the table"""
+        return len(self.get_line(0))
 
     @property
-    def N_lines(self):
-        if self.N_columns <= 0:
-            return 0
-        return len(self._lines[0])
+    def N_lines(self) -> int:
+        """Return the number of lines in the table"""
+        return self.nrows
 
     def __str__(self):
-        return ''.join(self.get_pretty_print(fmt='string', ignore_cols=[]))
+        return "".join(self.get_pretty_print(fmt="text", ignore_cols=[]))
