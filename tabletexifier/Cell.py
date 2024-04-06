@@ -29,6 +29,12 @@ class Cell:
         }
         self._responsible_for_borders = False
 
+    def update_size(self, nrows=None, ncols=None):
+        if nrows is not None:
+            self.dimension[0] = nrows
+        if ncols is not None:
+            self.dimension[1] = ncols
+
     def set_decimal_places(self, value):
         self._decimal_places = value
 
@@ -67,15 +73,33 @@ class Cell:
         Returns:
             str: _description_
         """
+
+        if (
+            self.is_blank
+            and self.previous_row is not None
+            and self.previous_row.is_multirow
+            and self.previous_row.is_multicol
+        ):
+            return r"\multicolumn{" + str(self.previous_row.dimension[1]) + r"}{c}{}"
+
         if self.is_blank:
             return ""
 
         val = self.content
-        if isinstance(val(float)):
+
+        if isinstance(val, float):
             val = "{:.{}f}".format(val, self._decimal_places)
+
         if self._design_properties["color"] is not None:
             val = "\textcolor{}{}".format(self._design_properties["color"], val)
-        return val
+
+        if self.is_multirow:
+            val = r"\multirow{" + str(self.dimension[0]) + r"}{*}{" + f"{val}" + "}"
+
+        if self.is_multicol:
+            val = r"\multicolumn{" + str(self.dimension[1]) + r"}{c}{" + f"{val}" + "}"
+
+        return str(val)
 
     def set_property(self, param, new_value):
         self._design_properties[param] = new_value
@@ -87,7 +111,7 @@ class Cell:
         self.origin = new_origin
 
     def __repr__(self) -> str:
-        return f"Cell with {self.content=}"
+        return f"Cell with {self.content=}; {self.is_multicol=}, {self.is_multirow=}"
 
 
 if __name__ == "__main__":
