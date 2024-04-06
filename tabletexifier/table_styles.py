@@ -34,11 +34,18 @@ class Style:
     def get_vline_positions(self):
         return (*self.vline_locs, *self.extra_vline)
 
-    def get_col_separation(self, row_number, col_number, fmt):
+    def get_col_separation(self, row_number, col_number, cell, fmt):
         if fmt == "text":
             out = " "
             if col_number in self.get_vline_positions():
-                out = "|"
+                if (
+                    cell.is_blank
+                    and cell.previous_col is not None
+                    and cell.previous_col.is_multicol
+                ):
+                    out = " "
+                else:
+                    out = "|"
 
         elif fmt == "LaTeX":
             if col_number == self.ncols:
@@ -48,7 +55,9 @@ class Style:
                     for _ in range(counts):
                         out += r" \hline"
 
-            elif col_number != 0:
+            elif col_number != 0 and not (
+                cell.is_blank and cell.previous_col.is_multicol
+            ):
                 out = "&"
             else:
                 out = ""
@@ -59,14 +68,23 @@ class Style:
         n = self.get_hline_positions().count(row_number)
         return res, n
 
-    def get_row_separation(self, row_number, col_number, col_size, fmt):
+    def get_row_separation(self, row_number, col_number, col_size, cell, fmt):
         out = ""
         if fmt == "text":
-            print(col_number)
             if row_number in self.get_hline_positions():
                 new_row = ""
                 if col_number in self.get_vline_positions():
-                    new_row += "+" + "-" * (col_size - 1)
+                    new_row += "+"
+                    if (
+                        cell.is_blank
+                        and cell.previous_row is not None
+                        and cell.previous_row.is_multirow
+                        and row_number
+                        != self.nrows  # Ensures that things don't break on the last row
+                    ):
+                        new_row += " " * col_size
+                    else:
+                        new_row += "-" * (col_size)
                     if col_number == self.ncols - 1:
                         # Get the last vertical line
                         new_row += "+"
