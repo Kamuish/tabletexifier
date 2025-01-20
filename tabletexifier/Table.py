@@ -190,7 +190,7 @@ class Table:
 
         cell.update_size(ncols=1 + number_of_cols)
 
-    def get_pretty_print(self, ignore_cols, fmt="text") -> List[str]:
+    def get_pretty_print(self, ignore_rows, fmt="text") -> List[str]:
         """Generate the textual representation of the table, under a given format
 
         Args:
@@ -200,10 +200,15 @@ class Table:
         Returns:
             List[str]: _description_
         """
+        if ignore_rows > self.nrows:
+            raise ValueError("Can't ignore more than the available rows")
+
         text_sizes = self.compute_max_text_size_of_cols()
         lines = []
-        self._table_style.set_size(rows=self.nrows, cols=self.N_columns)
+        self._table_style.set_size(rows=self.nrows - ignore_rows, cols=self.N_columns)
         for row_index in range(self.nrows):
+            if row_index < ignore_rows:
+                continue
             if fmt == "text":
                 row = [i.generate_text() for i in self.get_line(row_index)]
             elif fmt == "LaTeX":
@@ -296,10 +301,11 @@ class Table:
     def write_to_file(
         self, path, mode="a", write_table=True, write_LaTeX=False, ignore_cols=None
     ):
+        skip = 1 if mode == "a" else 0
         with open(path, mode=mode) as file:
             if write_table:
-                lines = self.get_pretty_print(fmt="text", ignore_cols=ignore_cols)
-                file.write("".join(lines))
+                lines = self.get_pretty_print(fmt="text", ignore_rows=skip)
+                file.write("".join(lines) + "\n")
             if write_LaTeX:
                 if write_table:
                     file.write("\n")
