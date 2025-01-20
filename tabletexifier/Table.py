@@ -323,4 +323,4 @@ class Table:
         return self.nrows
 
     def __str__(self):
-        return "".join(self.get_pretty_print(fmt="text"))
+        return "".join(self.get_pretty_print(ignore_rows=0, fmt="text"))
