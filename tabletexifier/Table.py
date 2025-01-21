@@ -32,7 +32,7 @@ class Table:
         self._largest_entry = [len(str(head)) for head in header]
 
         # Number of decimal places in the numbers
-        self._decimal_places = None
+        self._decimal_places = 2
 
         self._tableCells = []
         self.nrows = 0
