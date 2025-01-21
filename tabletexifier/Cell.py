@@ -18,7 +18,7 @@ class Cell:
         self.next_row = None
         self.previous_row = None
         self.is_blank = is_blank
-        self._decimal_places = None
+        self._decimal_places = 2
         # number of cells
 
         self._design_properties = {
@@ -88,7 +88,7 @@ class Cell:
         val = self.content
 
         if isinstance(val, float):
-            val = "{:.{}f}".format(val, self._decimal_places)
+            val = round(val, self._decimal_places)
 
         if self._design_properties["color"] is not None:
             val = "\textcolor{}{}".format(self._design_properties["color"], val)

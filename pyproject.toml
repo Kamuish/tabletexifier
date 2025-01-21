@@ -1,10 +1,11 @@
 [project]
 name = "tabletexifier"
-version = "0.3.2"
+version = "0.3.3"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "pytest-assume>=2.4.3",
     "twine>=6.0.1",
 ]
 
